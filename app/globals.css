@@ -1,26 +1,167 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* Ice + White Color Palette */
+  --color-ice-50: #F0FBFF;
+  --color-ice-100: #E0F7FF;
+  --color-ice-200: #D6F3FF;
+  --color-ice-300: #BEEBFF;
+  --color-ice-400: #3ABEFF;
+  --color-ice-500: #0EA5E9;
+  --color-ice-600: #0284C7;
+  
+  --color-savings-green: #00C48C;
+  --color-warning-orange: #FFB020;
+  --color-alert-red: #FF5C5C;
+  --color-navy-dark: #0A2540;
+  
+  /* Gradients */
+  --gradient-frost: linear-gradient(135deg, #E0F7FF, #BEEBFF, #FFFFFF);
+  --gradient-ice: linear-gradient(135deg, #3ABEFF, #0EA5E9);
+  
+  /* Shadows */
+  --shadow-ice-glow: 0 0 20px rgba(58, 190, 255, 0.3);
+  --shadow-ice-soft: 0 4px 20px rgba(58, 190, 255, 0.1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: white;
+  color: var(--color-navy-dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.hover-glow {
+  transition: all 300ms ease;
+}
+
+.hover-glow:hover {
+  box-shadow: var(--shadow-ice-glow);
+  transform: scale(1.02);
+}
+
+/* Removed Fade In and Slide Up animations replaced by Framer Motion */
+
+/* Float Animation */
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Pulse Animation */
+.animate-pulse-slow {
+  animation: pulseSlow 4s ease-in-out infinite;
+}
+
+@keyframes pulseSlow {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
+}
+
+/* Removed Scale In and Bounce In animations replaced by Framer Motion */
+
+/* Background Gradients */
+.bg-frost-gradient {
+  background: var(--gradient-frost);
+}
+
+.bg-ice-gradient {
+  background: var(--gradient-ice);
+}
+
+/* Shadow Utilities */
+.shadow-ice-glow {
+  box-shadow: var(--shadow-ice-glow);
+}
+
+.shadow-ice-soft {
+  box-shadow: var(--shadow-ice-soft);
+}
+
+/* Hover Effects */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Button Animations */
+button, a[class*="rounded-full"] {
+  transition: all 0.3s ease;
+}
+
+button:active, a[class*="rounded-full"]:active {
+  transform: scale(0.95);
+}
+
+/* Upload section: animated background color layer */
+.upload-bg-animated {
+  background:
+    radial-gradient(48% 58% at 18% 22%, rgba(168, 85, 247, 0.38), transparent 62%),
+    radial-gradient(52% 58% at 82% 28%, rgba(236, 72, 153, 0.30), transparent 64%),
+    radial-gradient(58% 62% at 50% 88%, rgba(14, 165, 233, 0.20), transparent 64%),
+    linear-gradient(135deg, rgba(250, 245, 255, 1), rgba(255, 255, 255, 1));
+  background-size: 140% 140%;
+  animation: uploadBgShift 12s ease-in-out infinite;
+}
+
+@keyframes uploadBgShift {
+  0% {
+    background-position: 0% 40%;
+  }
+  50% {
+    background-position: 100% 60%;
+  }
+  100% {
+    background-position: 0% 40%;
+  }
+}
+
+/* How it works section: animated background color layer */
+.howitworks-bg-animated {
+  background:
+    radial-gradient(55% 62% at 18% 25%, rgba(59, 130, 246, 0.35), transparent 62%),
+    radial-gradient(55% 62% at 82% 35%, rgba(139, 92, 246, 0.30), transparent 64%),
+    radial-gradient(60% 66% at 55% 90%, rgba(34, 211, 238, 0.22), transparent 64%),
+    linear-gradient(135deg, rgba(239, 246, 255, 1), rgba(238, 242, 255, 1));
+  background-size: 140% 140%;
+  animation: howItWorksBgShift 14s ease-in-out infinite;
+}
+
+@keyframes howItWorksBgShift {
+  0% {
+    background-position: 0% 45%;
+  }
+  50% {
+    background-position: 100% 55%;
+  }
+  100% {
+    background-position: 0% 45%;
+  }
 }
