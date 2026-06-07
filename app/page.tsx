@@ -4,13 +4,14 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
-const API_BASE_URL = 'https://tco.shellkode.ai';
+const API_BASE_URL = 'http://localhost:8000';
 
 export default function Home() {
   const [loading, setLoading] = useState(false); // Changed to false - no initial loading
   const [uploading, setUploading] = useState(false);
   const [provider, setProvider] = useState<'Azure' | 'GCP'>('Azure');
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [statusMessage, setStatusMessage] = useState<string>(''); // NEW: Show detailed steps
   const [results, setResults] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [downloadBlob, setDownloadBlob] = useState<Blob | null>(null);
@@ -27,21 +28,19 @@ export default function Home() {
     setDownloadBlob(null);
 
     try {
-      setUploadProgress(30);
-      
+      setUploadProgress(10);
+
       const formData = new FormData();
       formData.append('file', file, file.name);
       formData.append('source_provider', provider);
-      
+
       console.log('Uploading file:', file.name, 'Provider:', provider, 'Size:', file.size);
-      
-      // Use /migrate endpoint to get Excel file
-      const response = await fetch(`${API_BASE_URL}/migrate`, {
+
+      // Use /migrate/async endpoint for background processing
+      const response = await fetch(`${API_BASE_URL}/migrate/async`, {
         method: 'POST',
         body: formData,
       });
-
-      setUploadProgress(70);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -55,20 +54,53 @@ export default function Home() {
         throw new Error(errorData.detail || errorData.message || `Upload failed: ${response.statusText}`);
       }
 
-      // Get the blob (Excel file) and store it
-      const blob = await response.blob();
-      setUploadProgress(100);
-      setDownloadBlob(blob);
-      
-      // Show success message
-      setResults({ success: true, message: 'Report ready for download!' });
-      console.log('Excel file ready for download');
+      const jobData = await response.json();
+      const jobId = jobData.job_id;
+      console.log('Job created:', jobId);
+
+      setUploadProgress(20);
+
+      // Poll for job status
+      const pollInterval = setInterval(async () => {
+        try {
+          const statusResponse = await fetch(`${API_BASE_URL}/jobs/${jobId}`);
+          const status = await statusResponse.json();
+
+          console.log('Job status:', status.status, 'Progress:', status.progress, 'Message:', status.message);
+
+          // Update progress AND detailed message
+          setUploadProgress(status.progress);
+          setStatusMessage(status.message || 'Processing...');
+
+          if (status.status === 'completed') {
+            clearInterval(pollInterval);
+            setStatusMessage('✅ Analysis complete! Downloading...');
+
+            // Download the result
+            const downloadResponse = await fetch(`${API_BASE_URL}/download/${jobId}`);
+            const blob = await downloadResponse.blob();
+
+            setDownloadBlob(blob);
+            setResults({ success: true, message: 'Report ready for download!' });
+            setUploading(false);
+            setStatusMessage('✅ Report ready!');
+            console.log('Job completed, file ready!');
+          } else if (status.status === 'failed') {
+            clearInterval(pollInterval);
+            throw new Error(status.error || 'Processing failed');
+          }
+        } catch (pollErr: any) {
+          console.error('Polling error:', pollErr);
+          clearInterval(pollInterval);
+          throw pollErr;
+        }
+      }, 5000); // Poll every 5 seconds
+
     } catch (err: any) {
       setError(err.message || 'Failed to upload file');
       console.error('Upload error:', err);
-    } finally {
       setUploading(false);
-      setTimeout(() => setUploadProgress(0), 1000);
+      setUploadProgress(0);
     }
   };
 
@@ -250,6 +282,12 @@ export default function Home() {
                 <div className="py-8">
                   <div className="w-20 h-20 mx-auto mb-4 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
                   <p className="text-slate-700 font-semibold mb-2">Analyzing your data...</p>
+
+                  {/* Detailed status message */}
+                  <p className="text-sm text-blue-600 font-medium mb-3 min-h-6">
+                    {statusMessage || 'Starting...'}
+                  </p>
+
                   <div className="w-full max-w-xs mx-auto bg-slate-200 rounded-full h-2 overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
