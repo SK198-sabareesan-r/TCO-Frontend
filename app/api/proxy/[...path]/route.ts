@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = 'http://34.230.45.20:8000';
+const BACKEND_URL = 'http://127.0.0.1:8000'; // localhost - frontend and backend on same server
 
 export async function GET(
   request: NextRequest,
