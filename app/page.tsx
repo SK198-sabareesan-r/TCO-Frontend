@@ -1,11 +1,10 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
-const API_BASE_URL = '/api/proxy'; // Use Next.js proxy to avoid HTTPS/HTTP mixed content
+const API_BASE_URL = '/api/proxy';
 
 export default function Home() {
   const [uploading, setUploading] = useState(false);
@@ -15,6 +14,7 @@ export default function Home() {
   const [results, setResults] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [downloadBlob, setDownloadBlob] = useState<Blob | null>(null);
+  const [combinedLink, setCombinedLink] = useState<string>('');
 
   // Remove the loading timer effect
 
@@ -81,29 +81,29 @@ export default function Home() {
             const blob = await downloadResponse.blob();
             setDownloadBlob(blob);
 
-            // Also fetch JSON summary to power dashboard pages
-            try {
-              const jsonResponse = await fetch(`${API_BASE_URL}/jobs/${jobId}`);
-              const jobInfo = await jsonResponse.json();
-              // Store provider + jobId so dashboard knows the context
-              const summary = {
-                jobId,
-                provider,
-                completedAt: new Date().toISOString(),
-                message: jobInfo.message,
-              };
-              localStorage.setItem('tco_last_job', JSON.stringify(summary));
-            } catch {
-              // non-critical — dashboard will show empty state if missing
-            }
+            // Capture combined calculator link from job status
+            const link = status.combined_calculator_link || '';
+            if (link) setCombinedLink(link);
 
-            setResults({ success: true, message: 'Report ready for download!' });
+            // Persist for later
+            try {
+              localStorage.setItem('tco_last_job', JSON.stringify({
+                jobId, provider, completedAt: new Date().toISOString(),
+                combinedLink: link,
+              }));
+            } catch {}
+
+            setResults({ success: true });
             setUploading(false);
             setStatusMessage('✅ Report ready!');
-            console.log('Job completed, file ready!');
+            console.log('Job completed, combined link:', link || '(none yet)');
           } else if (status.status === 'failed') {
             clearInterval(pollInterval);
             throw new Error(status.error || 'Processing failed');
+          }
+          // Also capture combined link as it appears (combined step runs at ~98%)
+          if (status.combined_calculator_link && !combinedLink) {
+            setCombinedLink(status.combined_calculator_link);
           }
         } catch (pollErr: any) {
           console.error('Polling error:', pollErr);
@@ -339,38 +339,63 @@ export default function Home() {
               )}
 
               {results && !error && (
-                <div className="py-8 text-center">
-                  <div className="w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-                    <svg className="w-10 h-10 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <div className="py-6 text-center">
+                  <div className="w-16 h-16 mx-auto mb-3 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <h4 className="text-xl font-bold text-slate-800 mb-2">Analysis Complete!</h4>
-                  <p className="text-slate-600 mb-6">Your AWS migration report is ready to download.</p>
+                  <h4 className="text-xl font-bold text-slate-800 mb-1">Analysis Complete!</h4>
+                  <p className="text-slate-500 text-sm mb-5">Your AWS migration report is ready.</p>
+
+                  {/* Combined AWS Calculator Link — primary CTA */}
+                  {combinedLink ? (
+                    <div className="mb-5 p-4 bg-blue-50 border border-blue-200 rounded-xl text-left">
+                      <p className="text-xs font-semibold text-blue-500 uppercase mb-1">
+                        🔗 Combined AWS Calculator — All Services in One Estimate
+                      </p>
+                      <a
+                        href={combinedLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block text-blue-700 font-semibold text-sm break-all hover:underline mb-3"
+                      >
+                        {combinedLink}
+                      </a>
+                      <a
+                        href={combinedLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full font-semibold text-sm hover-glow"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                        </svg>
+                        Open All Services in AWS Calculator →
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="mb-5 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700">
+                      ⏳ Combined AWS Calculator link is being generated — check the downloaded Excel report (Summary sheet row 1) once ready.
+                    </div>
+                  )}
+
+                  {/* Secondary: Download report */}
                   <div className="flex gap-3 justify-center flex-wrap">
                     <button
                       onClick={handleDownload}
-                      className="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full font-semibold hover-glow text-sm shadow-md transition-transform active:scale-95 flex items-center gap-2"
+                      className="px-6 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full font-semibold text-sm shadow-md flex items-center gap-2 hover-glow"
                     >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                       </svg>
-                      Download Report
+                      Download Full Report
                     </button>
-                    <Link
-                      href="/dashboard/reports"
-                      className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full font-semibold text-sm shadow-md flex items-center gap-2 hover-glow"
-                    >
-                      View Dashboard →
-                    </Link>
                     <button
-                      onClick={() => {
-                        setResults(null);
-                        setDownloadBlob(null);
-                      }}
-                      className="px-6 py-3 bg-slate-600 text-white rounded-full font-semibold text-sm hover:bg-slate-700 transition-colors"
+                      onClick={() => { setResults(null); setDownloadBlob(null); setCombinedLink(''); }}
+                      className="px-6 py-2.5 bg-slate-600 text-white rounded-full font-semibold text-sm hover:bg-slate-700 transition-colors"
                     >
-                      Upload New
+                      Upload New File
                     </button>
                   </div>
                 </div>
