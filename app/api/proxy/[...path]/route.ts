@@ -4,10 +4,11 @@ const BACKEND_URL = 'http://34.230.45.20:8000';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const path = params.path.join('/');
-  const url = `${BACKEND_URL}/${path}`;
+  const { path } = await params;
+  const pathString = path.join('/');
+  const url = `${BACKEND_URL}/${pathString}`;
 
   try {
     const response = await fetch(url, {
@@ -30,10 +31,11 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const path = params.path.join('/');
-  const url = `${BACKEND_URL}/${path}`;
+  const { path } = await params;
+  const pathString = path.join('/');
+  const url = `${BACKEND_URL}/${pathString}`;
 
   try {
     const formData = await request.formData();
