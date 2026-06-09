@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
-const API_BASE_URL = '34.230.45.20:8000';
+const API_BASE_URL = 'http://34.230.45.20:8000';
 
 export default function Home() {
   const [loading, setLoading] = useState(false); // Changed to false - no initial loading
