@@ -281,22 +281,27 @@ export default function Home() {
               {uploading && (
                 <div className="py-8">
                   <div className="w-20 h-20 mx-auto mb-4 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-                  <p className="text-slate-700 font-semibold mb-2">Analyzing your data...</p>
+                  <p className="text-slate-700 font-bold text-lg mb-3">Analyzing your data...</p>
 
-                  {/* Detailed status message */}
-                  <p className="text-sm text-blue-600 font-medium mb-3 min-h-6">
-                    {statusMessage || 'Starting...'}
-                  </p>
-
-                  <div className="w-full max-w-xs mx-auto bg-slate-200 rounded-full h-2 overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${uploadProgress}%` }}
-                      transition={{ duration: 0.3 }}
-                      className="h-full bg-gradient-to-r from-blue-500 to-indigo-600"
-                    />
+                  {/* Detailed status message - MORE PROMINENT */}
+                  <div className="mb-4 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-base text-blue-700 font-semibold min-h-6">
+                      {statusMessage || '🔄 Starting analysis...'}
+                    </p>
                   </div>
-                  <p className="text-xs text-slate-500 mt-2">{uploadProgress}%</p>
+
+                  {/* Progress bar */}
+                  <div className="w-full max-w-md mx-auto mb-2">
+                    <div className="bg-slate-200 rounded-full h-3 overflow-hidden shadow-inner">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${uploadProgress}%` }}
+                        transition={{ duration: 0.3 }}
+                        className="h-full bg-gradient-to-r from-blue-500 to-indigo-600"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-sm text-slate-600 font-medium">{uploadProgress}% Complete</p>
                 </div>
               )}
 
