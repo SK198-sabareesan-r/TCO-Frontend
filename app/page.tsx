@@ -1,17 +1,17 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
 const API_BASE_URL = '/api/proxy'; // Use Next.js proxy to avoid HTTPS/HTTP mixed content
 
 export default function Home() {
-  const [loading, setLoading] = useState(false); // Changed to false - no initial loading
   const [uploading, setUploading] = useState(false);
   const [provider, setProvider] = useState<'Azure' | 'GCP'>('Azure');
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [statusMessage, setStatusMessage] = useState<string>(''); // NEW: Show detailed steps
+  const [statusMessage, setStatusMessage] = useState<string>('');
   const [results, setResults] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [downloadBlob, setDownloadBlob] = useState<Blob | null>(null);
@@ -76,11 +76,27 @@ export default function Home() {
             clearInterval(pollInterval);
             setStatusMessage('✅ Analysis complete! Downloading...');
 
-            // Download the result
+            // Download the Excel result
             const downloadResponse = await fetch(`${API_BASE_URL}/download/${jobId}`);
             const blob = await downloadResponse.blob();
-
             setDownloadBlob(blob);
+
+            // Also fetch JSON summary to power dashboard pages
+            try {
+              const jsonResponse = await fetch(`${API_BASE_URL}/jobs/${jobId}`);
+              const jobInfo = await jsonResponse.json();
+              // Store provider + jobId so dashboard knows the context
+              const summary = {
+                jobId,
+                provider,
+                completedAt: new Date().toISOString(),
+                message: jobInfo.message,
+              };
+              localStorage.setItem('tco_last_job', JSON.stringify(summary));
+            } catch {
+              // non-critical — dashboard will show empty state if missing
+            }
+
             setResults({ success: true, message: 'Report ready for download!' });
             setUploading(false);
             setStatusMessage('✅ Report ready!');
@@ -331,7 +347,7 @@ export default function Home() {
                   </div>
                   <h4 className="text-xl font-bold text-slate-800 mb-2">Analysis Complete!</h4>
                   <p className="text-slate-600 mb-6">Your AWS migration report is ready to download.</p>
-                  <div className="flex gap-3 justify-center">
+                  <div className="flex gap-3 justify-center flex-wrap">
                     <button
                       onClick={handleDownload}
                       className="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full font-semibold hover-glow text-sm shadow-md transition-transform active:scale-95 flex items-center gap-2"
@@ -341,6 +357,12 @@ export default function Home() {
                       </svg>
                       Download Report
                     </button>
+                    <Link
+                      href="/dashboard/reports"
+                      className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full font-semibold text-sm shadow-md flex items-center gap-2 hover-glow"
+                    >
+                      View Dashboard →
+                    </Link>
                     <button
                       onClick={() => {
                         setResults(null);

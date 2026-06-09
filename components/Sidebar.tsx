@@ -1,12 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 const menuItems = [
-  { name: 'Dashboard', path: '/dashboard', icon: '📊' },
+  { name: 'Home', path: '/', icon: '🏠' },
   { name: 'Upload', path: '/dashboard/upload', icon: '📤' },
   { name: 'Reports', path: '/dashboard/reports', icon: '📑' },
   { name: 'Cost Comparison', path: '/dashboard/comparison', icon: '💰' },
@@ -38,13 +37,9 @@ export default function Sidebar() {
           {/* Logo */}
           <div className="p-6 border-b border-ice-200">
             <Link href="/" className="flex items-center gap-3">
-              <Image
-                src="/logo.png"
-                alt="Cloud Migration Logo"
-                width={40}
-                height={40}
-                className="w-10 h-10"
-              />
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+                T
+              </div>
               {!isCollapsed && (
                 <span className="font-bold text-navy-dark text-lg">
                   Cloud Migration

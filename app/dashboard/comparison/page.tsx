@@ -1,117 +1,122 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+
+interface LastJob {
+  jobId: string;
+  provider: string;
+  completedAt: string;
+}
+
 export default function ComparisonPage() {
+  const [lastJob, setLastJob] = useState<LastJob | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('tco_last_job');
+      if (raw) setLastJob(JSON.parse(raw));
+    } catch {}
+  }, []);
+
+  if (!lastJob) {
+    return (
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8 animate-fade-in">
+          <h1 className="text-3xl lg:text-4xl font-bold text-navy-dark mb-2">Cost Comparison</h1>
+          <p className="text-gray-600">Detailed comparison across cloud providers</p>
+        </div>
+        <div className="glass-effect p-12 rounded-2xl border border-ice-200 text-center animate-fade-in">
+          <div className="text-6xl mb-4">💰</div>
+          <h3 className="text-2xl font-bold text-navy-dark mb-2">No Analysis Available</h3>
+          <p className="text-gray-600 mb-6">
+            Run a migration analysis first to see cost comparisons here.
+            <br />The full breakdown is included in the downloaded Excel report (Cost Comparison sheet).
+          </p>
+          <Link
+            href="/dashboard/upload"
+            className="inline-block px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full font-semibold hover-glow"
+          >
+            Upload File to Analyse
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8 animate-fade-in">
-        <h1 className="text-3xl lg:text-4xl font-bold text-navy-dark mb-2">
-          Cost Comparison
-        </h1>
+        <h1 className="text-3xl lg:text-4xl font-bold text-navy-dark mb-2">Cost Comparison</h1>
         <p className="text-gray-600">
-          Detailed comparison across cloud providers
+          Last analysis: <span className="font-semibold">{lastJob.provider} → AWS</span> &nbsp;·&nbsp; {new Date(lastJob.completedAt).toLocaleString()}
         </p>
       </div>
 
-      {/* Comparison Cards */}
-      <div className="grid lg:grid-cols-3 gap-6 mb-8">
-        <div className="glass-effect p-6 rounded-2xl border border-ice-200 animate-fade-in">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl">
-              ☁️
-            </div>
-            <h3 className="text-xl font-bold text-navy-dark">Azure</h3>
-          </div>
-          <div className="space-y-3">
+      {/* Download CTA */}
+      <div className="glass-effect p-6 rounded-2xl border border-blue-100 bg-blue-50/60 mb-8 animate-fade-in">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <span className="text-3xl">📊</span>
             <div>
-              <div className="text-sm text-gray-600">Current Cost</div>
-              <div className="text-2xl font-bold text-navy-dark">$28,450</div>
-            </div>
-            <div className="pt-3 border-t border-ice-200">
-              <div className="text-sm text-gray-600">Services</div>
-              <div className="text-lg font-semibold">24 instances</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="glass-effect p-6 rounded-2xl border border-ice-200 animate-fade-in" style={{ animationDelay: '100ms' }}>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center text-2xl">
-              ☁️
-            </div>
-            <h3 className="text-xl font-bold text-navy-dark">GCP</h3>
-          </div>
-          <div className="space-y-3">
-            <div>
-              <div className="text-sm text-gray-600">Current Cost</div>
-              <div className="text-2xl font-bold text-navy-dark">$16,830</div>
-            </div>
-            <div className="pt-3 border-t border-ice-200">
-              <div className="text-sm text-gray-600">Services</div>
-              <div className="text-lg font-semibold">18 instances</div>
+              <p className="font-semibold text-navy-dark">Full cost comparison is in your downloaded report</p>
+              <p className="text-sm text-gray-600 mt-1">
+                The Excel report includes a dedicated <strong>Cost Comparison</strong> sheet with a side-by-side
+                breakdown: Current Provider vs AWS On-Demand vs AWS Optimized, per service.
+              </p>
             </div>
           </div>
-        </div>
-
-        <div className="glass-effect p-6 rounded-2xl border border-savings-green/20 bg-savings-green/5 animate-fade-in" style={{ animationDelay: '200ms' }}>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-savings-green/20 rounded-xl flex items-center justify-center text-2xl">
-              ☁️
-            </div>
-            <h3 className="text-xl font-bold text-navy-dark">AWS (Optimized)</h3>
-          </div>
-          <div className="space-y-3">
-            <div>
-              <div className="text-sm text-gray-600">Projected Cost</div>
-              <div className="text-2xl font-bold text-savings-green">$18,120</div>
-            </div>
-            <div className="pt-3 border-t border-savings-green/20">
-              <div className="text-sm text-gray-600">Savings</div>
-              <div className="text-lg font-semibold text-savings-green">60% ($27,160)</div>
-            </div>
-          </div>
+          <Link
+            href="/dashboard/reports"
+            className="shrink-0 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold hover-glow flex items-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            Download Report
+          </Link>
         </div>
       </div>
 
-      {/* Detailed Breakdown */}
-      <div className="glass-effect p-8 rounded-2xl border border-ice-200">
-        <h2 className="text-2xl font-bold text-navy-dark mb-6">Service Category Breakdown</h2>
-        
-        <div className="space-y-6">
+      {/* What the report contains */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-fade-in">
+        {[
+          { sheet: 'Sheet 1', title: 'Summary', desc: 'Best AWS match + optimized cost per service', icon: '📋' },
+          { sheet: 'Sheet 2', title: 'All Matches', desc: 'Every AWS candidate with full pricing breakdown', icon: '🔍' },
+          { sheet: 'Sheet 3', title: 'CSP Options', desc: 'All 6 Savings Plans + Spot pricing per instance', icon: '💎' },
+          { sheet: 'Sheet 4', title: 'Cost Comparison', desc: 'Current vs On-Demand vs Optimized, with savings %', icon: '💰' },
+        ].map((item, i) => (
+          <div key={i} className="glass-effect p-5 rounded-2xl border border-ice-200" style={{ animationDelay: `${i * 80}ms` }}>
+            <div className="text-3xl mb-3">{item.icon}</div>
+            <div className="text-xs font-semibold text-blue-500 uppercase mb-1">{item.sheet}</div>
+            <div className="font-bold text-navy-dark mb-1">{item.title}</div>
+            <div className="text-sm text-gray-500">{item.desc}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* What the scoring means */}
+      <div className="glass-effect p-6 rounded-2xl border border-ice-200 animate-fade-in">
+        <h2 className="text-lg font-bold text-navy-dark mb-4">How AWS instances are ranked</h2>
+        <div className="grid md:grid-cols-3 gap-4">
           {[
-            { category: 'Compute', azure: 15200, gcp: 8900, aws: 9600, savings: 57 },
-            { category: 'Storage', azure: 6800, gcp: 4200, aws: 4500, savings: 59 },
-            { category: 'Database', azure: 4200, gcp: 2400, aws: 2800, savings: 52 },
-            { category: 'Networking', azure: 2250, gcp: 1330, aws: 1220, savings: 66 },
-          ].map((item, index) => (
-            <div key={index} className="animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="font-semibold text-navy-dark text-lg">{item.category}</h3>
-                <span className="px-4 py-1 bg-savings-green/20 text-savings-green rounded-full text-sm font-semibold">
-                  {item.savings}% savings
-                </span>
+            { label: 'Cost', weight: '40%', desc: 'Lower effective monthly cost scores higher', color: 'bg-green-100 text-green-700' },
+            { label: 'Generation', weight: '30%', desc: 'Current-generation instances preferred', color: 'bg-blue-100 text-blue-700' },
+            { label: 'Instance Family', weight: '30%', desc: 'Widely available families (t3, m5, m6i, c6i…)', color: 'bg-indigo-100 text-indigo-700' },
+          ].map((item, i) => (
+            <div key={i} className="p-4 rounded-xl bg-gray-50 border border-gray-100">
+              <div className="flex items-center gap-2 mb-2">
+                <span className={`px-2 py-1 rounded-full text-xs font-bold ${item.color}`}>{item.weight}</span>
+                <span className="font-semibold text-navy-dark">{item.label}</span>
               </div>
-              <div className="grid grid-cols-3 gap-4 mb-2">
-                <div className="text-center p-3 bg-blue-50 rounded-lg">
-                  <div className="text-sm text-gray-600">Azure</div>
-                  <div className="font-bold text-navy-dark">${item.azure.toLocaleString()}</div>
-                </div>
-                <div className="text-center p-3 bg-red-50 rounded-lg">
-                  <div className="text-sm text-gray-600">GCP</div>
-                  <div className="font-bold text-navy-dark">${item.gcp.toLocaleString()}</div>
-                </div>
-                <div className="text-center p-3 bg-savings-green/10 rounded-lg">
-                  <div className="text-sm text-gray-600">AWS</div>
-                  <div className="font-bold text-savings-green">${item.aws.toLocaleString()}</div>
-                </div>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="h-full bg-savings-green rounded-full transition-all duration-1000"
-                  style={{ width: `${100 - item.savings}%` }}
-                ></div>
-              </div>
+              <p className="text-sm text-gray-600">{item.desc}</p>
             </div>
           ))}
         </div>
+        <p className="text-xs text-gray-400 mt-4">
+          Savings plan options: On-Demand · 1yr No Upfront · 1yr Partial · 1yr All Upfront · 3yr No Upfront · 3yr Partial · 3yr All Upfront · Spot (EC2)
+        </p>
       </div>
     </div>
   );
