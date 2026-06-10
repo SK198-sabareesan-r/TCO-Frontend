@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = 'http://127.0.0.1:8000'; // localhost - frontend and backend on same server
+// Use env var so local dev hits localhost and production hits 127.0.0.1
+// Set BACKEND_URL=http://localhost:8000 in .env.local for local dev
+const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
 
 export async function GET(
   request: NextRequest,
