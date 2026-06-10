@@ -299,8 +299,17 @@ export default function Home() {
         <div className="absolute top-1/2 left-1/4 w-32 sm:w-48 h-32 sm:h-48 bg-slate-300 rounded-full blur-3xl opacity-15 animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }} className="flex justify-start">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }} className="flex justify-between items-center">
             <Image src="/shellkode-logo.svg" alt="Shellkode" width={160} height={50} className="w-32 sm:w-40 md:w-48 h-auto opacity-90" />
+            <button
+              onClick={() => { sessionStorage.removeItem(SESSION_KEY); setIsLoggedIn(false); }}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 hover:bg-white/70 text-slate-600 hover:text-slate-800 text-sm font-medium border border-white/60 transition-all"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+              </svg>
+              Logout
+            </button>
           </motion.div>
         </div>
 
